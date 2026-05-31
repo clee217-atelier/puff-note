@@ -1,0 +1,28 @@
+---
+description: "Use when fixing bugs, broken builds, camera issues, canvas issues, or export issues."
+alwaysApply: false
+---
+
+# Debugging Protocol
+
+Do not rewrite large parts of the app unless necessary.
+
+Before changing code:
+1. Inspect the relevant files.
+2. Explain the likely cause.
+3. Propose the smallest fix.
+
+After changing code:
+1. Explain what changed.
+2. Explain how to test.
+3. Mention any remaining risk.
+
+For camera bugs:
+Check browser permissions, HTTPS or localhost, facingMode, video ref, playsInline, and track cleanup.
+
+For canvas bugs:
+Check canvas sizing, devicePixelRatio, touch coordinates, pointer events, and layering.
+
+For export bugs:
+Check whether the poster DOM node includes captured image, trace layer, overlay, and text.
+Check CORS if using external images.

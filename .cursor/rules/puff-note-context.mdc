@@ -1,0 +1,24 @@
+---
+description: "Always use this rule when working on Puff Note product, UX, copy, or visual direction."
+alwaysApply: true
+---
+
+# Puff Note Context
+
+Puff Note is a mobile first web prototype.
+
+Flow:
+Landing page → pick mood → start capture → open phone video camera → draw trace with finger on camera view → capture frame → apply mood finish → save as image/poster.
+
+MVP decision:
+Use touch drawing over the live camera view.
+Do not implement MediaPipe or air gesture tracking unless explicitly asked.
+
+Visual direction:
+Japanese editorial minimalism, soft cloud atmosphere, 217 Atelier taste, tactile mochi bubble buttons.
+
+Avoid:
+SaaS look, ecommerce language, air purifier ad feeling, childish kawaii, busy scrapbook, generic wellness app.
+
+Prioritize:
+Working flow, beautiful mood bubbles, reliable mobile camera, clear poster export.

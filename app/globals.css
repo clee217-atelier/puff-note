@@ -1,0 +1,294 @@
+@import "tailwindcss";
+
+:root {
+  --puff-paper: #f8f6f1;
+  --puff-ink: #1c1c1c;
+  --puff-muted: #6f6f6f;
+  --puff-quiet: #a7a7a7;
+
+  --puff-blue: #3f78bf;
+  --puff-blue-soft: rgba(63, 120, 191, 0.45);
+  --puff-blue-pale: #bfd7f0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-height: 100%;
+  background: var(--puff-paper);
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100%;
+  margin: 0;
+  background: var(--puff-paper);
+  color: var(--puff-ink);
+  font-family:
+    var(--font-inter),
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+  overflow-x: hidden;
+}
+
+body {
+  background: #f8f6f1;
+  color: #1c1c1c;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+::selection {
+  background: rgba(63, 120, 191, 0.18);
+  color: var(--puff-ink);
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Animation */
+.puff-cloud-enter {
+  opacity: 0;
+  transform: translateX(140px);
+  animation: puffCloudEnter 1.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  will-change: transform, opacity;
+}
+
+.puff-cloud-enter {
+  opacity: 0;
+  transform: translateX(150px);
+  animation: puffCloudEnter 1.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  will-change: transform, opacity;
+}
+
+@keyframes puffCloudEnter {
+  0% {
+    opacity: 0;
+    transform: translateX(150px);
+  }
+
+  35% {
+    opacity: 0.72;
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.puff-star-trail {
+  opacity: 1;
+}
+
+.puff-dash {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: puffDashAppear 0.28s ease-out forwards;
+}
+
+.puff-dash-1 {
+  animation-delay: 1.4s;
+}
+
+.puff-dash-2 {
+  animation-delay: 1.58s;
+}
+
+.puff-dash-3 {
+  animation-delay: 1.76s;
+}
+
+.puff-dash-4 {
+  animation-delay: 1.94s;
+}
+
+.puff-dash-5 {
+  animation-delay: 2.12s;
+}
+
+.puff-dash-6 {
+  animation-delay: 2.3s;
+}
+
+.puff-star-loop {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: puffDoodlePop 0.28s ease-out forwards;
+  animation-delay: 2.02s;
+}
+
+.puff-star-icon {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: puffTinyStarAppear 0.34s ease-out forwards;
+  animation-delay: 2.55s;
+}
+
+@keyframes puffDashAppear {
+  0% {
+    opacity: 0;
+    transform: translateX(8px) scale(0.96);
+  }
+
+  100% {
+    opacity: 0.72;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes puffDoodlePop {
+  0% {
+    opacity: 0;
+    transform: scale(0.84);
+  }
+
+  100% {
+    opacity: 0.62;
+    transform: scale(1);
+  }
+}
+
+@keyframes puffTinyStarAppear {
+  0% {
+    opacity: 0;
+    transform: scale(0.72) rotate(-8deg);
+  }
+
+  100% {
+    opacity: 0.92;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+/* mood bubble selection */
+.puff-mood-bubble:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 20px 44px rgba(60, 70, 90, 0.1),
+    inset 0 1px 3px rgba(255, 255, 255, 0.96),
+    inset 0 -8px 18px rgba(120, 130, 150, 0.08);
+}
+
+.puff-mood-bubble:active {
+  transform: translateY(2px) scale(0.97);
+  box-shadow:
+    0 8px 18px rgba(60, 70, 90, 0.06),
+    inset 0 4px 10px rgba(120, 130, 150, 0.12);
+}
+
+.puff-mood-bubble[data-selected="true"] {
+  border-color: rgba(63, 120, 191, 0.42);
+  box-shadow:
+    0 18px 44px rgba(63, 120, 191, 0.14),
+    inset 0 1px 3px rgba(255, 255, 255, 0.95),
+    inset 0 -8px 18px rgba(63, 120, 191, 0.08);
+}
+
+/* Hide scrollbars for horizontal mood cards */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Soft panel helper for capture / poster screens */
+.puff-soft-panel {
+  background: rgba(248, 246, 241, 0.72);
+  backdrop-filter: blur(18px);
+  border: 1px solid rgba(28, 28, 28, 0.08);
+  box-shadow: 0 18px 48px rgba(28, 28, 28, 0.08);
+}
+
+.puff-soft-button {
+  border-radius: 999px;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    opacity 160ms ease;
+  touch-action: manipulation;
+}
+
+.puff-soft-button:active {
+  transform: scale(0.98);
+}
+
+/* Camera / tracing specific */
+.puff-trace-canvas {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  height: 100%;
+  width: 100%;
+}
+
+.puff-camera-video {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+}
+
+/* Keep form controls from zooming awkwardly on iPhone */
+input,
+textarea,
+select {
+  font-size: 16px;
+}
+
+/* Safer mobile viewport */
+@supports (height: 100dvh) {
+  .min-h-screen {
+    min-height: 100dvh;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+
+  .puff-cloud-enter,
+  .puff-star-trail,
+  .puff-dash,
+  .puff-star-icon,
+  .puff-star-loop {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    stroke-dashoffset: 0 !important;
+  }
+}

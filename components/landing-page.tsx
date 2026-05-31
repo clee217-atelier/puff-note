@@ -138,14 +138,14 @@ export function LandingPage({
             type="button"
             disabled={!selectedMoodId}
             onClick={onStartCapture}
-            className="mt-4 flex min-h-16 w-full items-center justify-center gap-4 rounded-full border border-[#3F76B5]/45 bg-[#3F76B5] px-6 py-4 text-center font-mono text-[12px] font-medium uppercase tracking-[0.34em] text-white shadow-[0_18px_45px_rgba(63,120,191,0.16)] transition [touch-action:manipulation] [-webkit-tap-highlight-color:transparent] enabled:active:scale-[0.98] disabled:cursor-not-allowed disabled:border-[#1C1C1C]/10 disabled:bg-white/45 disabled:text-[#1C1C1C]/35 disabled:shadow-none"
+            className="mt-4 flex min-h-16 w-full items-center justify-center gap-4 rounded-full border border-[#3F76B5]/45 bg-[#3F76B5] px-6 py-4 text-center font-crayon text-[12px] font-medium uppercase tracking-[0.34em] text-white shadow-[0_18px_45px_rgba(63,120,191,0.16)] transition [touch-action:manipulation] [-webkit-tap-highlight-color:transparent] enabled:active:scale-[0.98] disabled:cursor-not-allowed disabled:border-[#1C1C1C]/10 disabled:bg-white/45 disabled:text-[#1C1C1C]/35 disabled:shadow-none"
           >
             <span className="text-lg leading-none">✎</span>
             <span>
               {selectedMoodId ? "Capture moment" : "Pick a Mood"}
             </span>
           </button>
-          <footer className="pt-20 text-right">
+          <footer className="pt-20 text-center">
             <p className="font-mono text-[11px] uppercase leading-[1.9] tracking-[0.34em] text-[#6f6f6f]/65">
             A 
             <br />

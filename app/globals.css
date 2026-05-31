@@ -286,7 +286,7 @@ select {
   *::after {
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
-    animation-duration: 0.03ms !important;
+    animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
   }
 
@@ -300,4 +300,21 @@ select {
     transform: none !important;
     stroke-dashoffset: 0 !important;
   }
+}
+
+@keyframes puffColorDotAppear {
+  0% {
+    opacity: 0;
+    transform: translateX(-8px) scale(0.72);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+.puff-color-dot {
+  opacity: 0;
+  animation: puffColorDotAppear 320ms ease-out forwards;
 }

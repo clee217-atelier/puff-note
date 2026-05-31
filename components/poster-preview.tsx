@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, useState } from "react";
 
 import type { Mood, MoodId } from "@/lib/moods";
 
@@ -109,6 +109,37 @@ function drawRoundedRect(
   ctx.closePath();
 }
 
+function drawWrappedCenteredText(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  centerX: number,
+  startY: number,
+  maxWidth: number,
+  lineHeight: number,
+) {
+  const words = text.toUpperCase().split(" ");
+  const lines: string[] = [];
+  let currentLine = "";
+
+  words.forEach((word) => {
+    const testLine = currentLine ? `${currentLine} ${word}` : word;
+    const width = ctx.measureText(testLine).width;
+
+    if (width <= maxWidth) {
+      currentLine = testLine;
+    } else {
+      if (currentLine) lines.push(currentLine);
+      currentLine = word;
+    }
+  });
+
+  if (currentLine) lines.push(currentLine);
+
+  lines.slice(0, 2).forEach((line, index) => {
+    ctx.fillText(line, centerX, startY + index * lineHeight);
+  });
+}
+
 export function PosterPreview({
   mood,
   capturedImageDataUrl,
@@ -117,6 +148,12 @@ export function PosterPreview({
 }: PosterPreviewProps) {
   const posterRef = useRef<HTMLDivElement>(null);
   const moodIcon = moodIconMap[mood.id];
+
+  const [caption, setCaption] = useState("");
+  const [showCaptionInput, setShowCaptionInput] = useState(false);
+
+  const captionLimit = 42;
+  const cleanCaption = caption.trim();
 
   const nowText = useMemo(
     () =>
@@ -130,28 +167,28 @@ export function PosterPreview({
     [],
   );
 
-  const handleSavePoster = async () => {
+  const handleSharePoster = async () => {
     const canvas = document.createElement("canvas");
-  
+
     const posterWidth = 1080;
 
     const border = 36;
     const imageWidth = posterWidth - border * 2;
     const imageHeight = 1240;
-    
+
     const footerHeight = 170;
     const posterHeight = imageHeight + footerHeight + border * 2;
-    
+
     const imageX = border;
     const imageY = border;
     const footerY = imageY + imageHeight;
-  
+
     canvas.width = posterWidth;
     canvas.height = posterHeight;
-  
+
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
-  
+
     // Polaroid white base
     ctx.fillStyle = "#FFFFFF";
     ctx.fillRect(0, 0, posterWidth, posterHeight);
@@ -164,41 +201,59 @@ export function PosterPreview({
       ctx.fillStyle = "#F8F6F1";
       ctx.fillRect(imageX, imageY, imageWidth, imageHeight);
     }
-  
-    // 2. Draw hand trace above captured image
+
+    // Draw hand trace above captured image
     if (drawingDataUrl) {
       const drawingImage = await loadImage(drawingDataUrl);
       drawImageContain(ctx, drawingImage, imageX, imageY, imageWidth, imageHeight);
     }
-  
-    // 3. Draw top white mood icon banner
+
+    // Mood icon banner with optional caption
     const moodImage = await loadImage(moodIcon);
-  
-    const bannerWidth = 230;
-    const bannerHeight = 82;
+
+    const bannerWidth = cleanCaption ? 390 : 230;
+    const bannerHeight = cleanCaption ? 150 : 82;
     const bannerX = (posterWidth - bannerWidth) / 2;
     const bannerY = imageY + 28;
-  
+
     ctx.save();
     drawRoundedRect(ctx, bannerX, bannerY, bannerWidth, bannerHeight, 48);
     ctx.fillStyle = "rgba(255, 255, 255, 0.94)";
     ctx.fill();
-  
+
     const moodIconSize = 58;
+
     ctx.drawImage(
       moodImage,
       bannerX + (bannerWidth - moodIconSize) / 2,
-      bannerY + (bannerHeight - moodIconSize) / 2,
+      bannerY + (cleanCaption ? 22 : (bannerHeight - moodIconSize) / 2),
       moodIconSize,
       moodIconSize,
     );
+
+    if (cleanCaption) {
+      ctx.fillStyle = "rgba(28, 28, 28, 0.72)";
+      ctx.font = "24px monospace";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+
+      drawWrappedCenteredText(
+        ctx,
+        cleanCaption,
+        posterWidth / 2,
+        bannerY + 106,
+        bannerWidth - 56,
+        30,
+      );
+    }
+
     ctx.restore();
-  
+
     // Footer strip
     ctx.fillStyle = "#FFFFFF";
     ctx.fillRect(0, footerY, posterWidth, footerHeight + border);
 
-    // subtle divider between image and footer
+    // Subtle divider between image and footer
     ctx.strokeStyle = "rgba(28, 28, 28, 0.08)";
     ctx.lineWidth = 2;
     ctx.beginPath();
@@ -227,15 +282,30 @@ export function PosterPreview({
     ctx.textAlign = "right";
     ctx.textBaseline = "middle";
 
-    ctx.fillText(
-      nowText.toUpperCase(),
-      posterWidth - border - 22,
-      footerCenterY,
-    );
+    ctx.fillText(nowText.toUpperCase(), posterWidth - border - 22, footerCenterY);
 
-    // 7. Download
+    // Share on mobile, download fallback on desktop or unsupported browsers
     const dataUrl = canvas.toDataURL("image/png");
-  
+    const response = await fetch(dataUrl);
+    const blob = await response.blob();
+
+    const file = new File([blob], `puff-note-${mood.id}.png`, {
+      type: "image/png",
+    });
+
+    if (navigator.canShare?.({ files: [file] })) {
+      try {
+        await navigator.share({
+          title: "Puff Note",
+          text: "A little Puff Note moment ☁️",
+          files: [file],
+        });
+        return;
+      } catch {
+        // If user cancels the share sheet, fall back to download.
+      }
+    }
+
     const link = document.createElement("a");
     link.href = dataUrl;
     link.download = `puff-note-${mood.id}.png`;
@@ -271,7 +341,7 @@ export function PosterPreview({
 
         <article
           ref={posterRef}
-          className="overflow-hidden rounded-[1.8rem] border border-[var(--puff-ink)]/8 bg-white shadow-[0_20px_48px_-24px_rgba(61,58,56,0.2)]"
+          className="overflow-hidden rounded-[1.8rem] border border-[var(--puff-ink)]/8 bg-white"
         >
           <div className="relative aspect-[4/5] w-full">
             {capturedImageDataUrl ? (
@@ -298,14 +368,27 @@ export function PosterPreview({
               />
             ) : null}
 
-            <div className="absolute inset-0 z-20 flex justify-center p-4">
-              <div className="flex h-[54px] w-[132px] items-center justify-center rounded-full bg-white/92 backdrop-blur-[3px]">
+            <div className="absolute inset-x-0 top-4 z-20 flex justify-center px-4">
+              <div
+                className={[
+                  "flex items-center justify-center rounded-[999px] bg-white/92 px-5 backdrop-blur-[3px]",
+                  cleanCaption
+                    ? "min-h-[78px] w-[220px] flex-col py-3"
+                    : "h-[54px] w-[132px]",
+                ].join(" ")}
+              >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={moodIcon}
                   alt=""
                   className="h-[42px] w-[42px] object-contain"
                 />
+
+                {cleanCaption ? (
+                  <p className="mt-1 max-w-[180px] truncate text-center font-mono text-[0.52rem] uppercase tracking-[0.16em] text-[#1C1C1C]/70">
+                    {cleanCaption}
+                  </p>
+                ) : null}
               </div>
             </div>
           </div>
@@ -319,19 +402,57 @@ export function PosterPreview({
                 className="h-20 w-20 object-contain"
               />
             </div>
+
             <p className="max-w-[12rem] text-right font-mono text-[0.58rem] uppercase leading-relaxed tracking-[0.2em] text-[var(--puff-ink)]/70">
               {nowText}
             </p>
           </div>
         </article>
 
+        <button
+          type="button"
+          onClick={() => setShowCaptionInput(true)}
+          className="rounded-full border border-[var(--puff-ink)]/10 bg-white px-5 py-3 font-crayon text-sm tracking-[0.12em] text-[var(--puff-ink)] transition active:scale-[0.98]"
+        >
+          {cleanCaption ? "Edit caption" : "Add caption"}
+        </button>
+
         <div className="flex gap-3">
           <button
             type="button"
-            onClick={handleSavePoster}
+            onClick={handleSharePoster}
             className="flex-1 rounded-full border border-[var(--puff-paper)]/10 bg-[var(--puff-blue)] px-5 py-3 font-crayon text-sm tracking-[0.12em] text-white transition hover:opacity-90 active:scale-[0.98]"
+            aria-label="Share poster"
           >
-            Save poster
+            <span className="flex items-center justify-center gap-2">
+              <svg
+                viewBox="0 0 24 24"
+                className="h-4 w-4"
+                fill="none"
+                aria-hidden
+              >
+                <path
+                  d="M12 16V4"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M7.5 8.5L12 4L16.5 8.5"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M5 14V18.5C5 19.3 5.7 20 6.5 20H17.5C18.3 20 19 19.3 19 18.5V14"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                />
+              </svg>
+              Share
+            </span>
           </button>
 
           <button
@@ -342,6 +463,77 @@ export function PosterPreview({
             Start over
           </button>
         </div>
+
+        {showCaptionInput ? (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#F8F6F1]/50 px-5 backdrop-blur-[6px]">
+            <div className="flex max-w-md flex-col rounded-[2rem] border border-[var(--puff-ink)]/8 bg-white px-5 py-5 shadow-[0_24px_70px_rgba(28,28,28,0.12)]">
+              <div className="mb-5 flex items-center justify-between">
+                <div>
+                  <p className="font-mono text-[0.62rem] uppercase tracking-[0.28em] text-[var(--puff-ink)]/45">
+                    Caption
+                  </p>
+                  <h2 className="mt-1 font-crayon text-xl text-[var(--puff-ink)]">
+                    Add a small note
+                  </h2>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setShowCaptionInput(false)}
+                  className="grid h-10 w-10 place-items-center rounded-full border border-[var(--puff-ink)]/10 bg-[#F8F6F1] font-mono text-sm text-[var(--puff-ink)] transition active:scale-95"
+                  aria-label="Close caption editor"
+                >
+                  ×
+                </button>
+              </div>
+
+              <textarea
+                value={caption}
+                onChange={(event) =>
+                  setCaption(event.target.value.slice(0, captionLimit))
+                }
+                autoFocus
+                placeholder="Whats in your mind..."
+                className="min-h-0 flex-1 resize-none rounded-[1.5rem] border border-[var(--puff-ink)]/10 bg-[#F8F6F1] px-5 py-5 font-crayon text-2xl leading-relaxed text-[var(--puff-ink)] outline-none placeholder:text-[var(--puff-ink)]/28"
+              />
+
+              <div className="mt-4 flex items-center justify-between">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCaption("");
+                    setShowCaptionInput(false);
+                  }}
+                  className="rounded-full border border-[var(--puff-ink)]/10 bg-white px-5 py-3 font-crayon text-sm tracking-[0.12em] text-[var(--puff-ink)]/55 transition active:scale-[0.98]"
+                >
+                  Clear
+                </button>
+
+                <p className="font-mono text-[0.65rem] text-[var(--puff-ink)]/45">
+                  {caption.length}/{captionLimit}
+                </p>
+
+                <button
+                  type="button"
+                  onClick={() => setShowCaptionInput(false)}
+                  className="grid h-12 w-12 place-items-center rounded-full bg-[var(--puff-blue)] text-white transition active:scale-95"
+                  aria-label="Confirm caption"
+                >
+                  <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" aria-hidden>
+                    <path
+                      d="M5 12.5L10 17L19 7"
+                      stroke="currentColor"
+                      strokeWidth="2.2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : null}
+
       </main>
     </div>
   );

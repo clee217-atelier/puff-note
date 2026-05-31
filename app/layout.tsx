@@ -1,24 +1,24 @@
 import type { Metadata } from "next";
-import { Inter, Noto_Sans_JP, Playfair_Display } from "next/font/google";
+import { Inter, Gaegu, Schoolbell} from "next/font/google";
 
 import "./globals.css";
+
+const gaegu = Gaegu({
+  variable: "--font-gaegu",
+  subsets: ["latin"],
+  weight: "400",
+});
+
+const schoolbell = Schoolbell({
+  variable: "--font-schoolbell",
+  subsets: ["latin"],
+  weight: "400",
+});
 
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
   weight: ["400", "500"],
-});
-
-const playfair = Playfair_Display({
-  variable: "--font-playfair",
-  subsets: ["latin"],
-  weight: ["500", "600"],
-});
-
-const notoSansJp = Noto_Sans_JP({
-  variable: "--font-noto-sans-jp",
-  subsets: ["latin"],
-  weight: ["400"],
 });
 
 export const metadata: Metadata = {
@@ -34,7 +34,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${playfair.variable} ${notoSansJp.variable} h-full antialiased`}
+      className={`${inter.variable} ${gaegu.variable} ${schoolbell.variable} `}
     >
       <body className="flex min-h-full flex-col font-sans">{children}</body>
     </html>

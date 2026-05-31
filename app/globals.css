@@ -7,7 +7,7 @@
   --puff-quiet: #a7a7a7;
 
   --puff-blue: #3f78bf;
-  --puff-blue-soft: rgba(63, 120, 191, 0.45);
+  --puff-blue-soft: #3F78BF73;
   --puff-blue-pale: #bfd7f0;
 }
 
@@ -33,8 +33,16 @@ body {
     BlinkMacSystemFont,
     "Segoe UI",
     sans-serif;
-  overflow-x: hidden;
+    overflow-x: hidden;
 }
+
+.font-crayon {
+  font-family:
+    var(--font-gaegu),
+    var(--font-schoolbell),
+    cursive;
+}
+
 
 body {
   background: #f8f6f1;
@@ -55,6 +63,7 @@ button {
 button:disabled {
   cursor: not-allowed;
 }
+
 
 ::selection {
   background: rgba(63, 120, 191, 0.18);
@@ -277,7 +286,7 @@ select {
   *::after {
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
-    animation-duration: 0.01ms !important;
+    animation-duration: 0.03ms !important;
     animation-iteration-count: 1 !important;
   }
 

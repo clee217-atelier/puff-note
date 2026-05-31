@@ -28,12 +28,12 @@ function BackgroundDecor() {
           src="/doodles/cloud.png"
           alt=""
           aria-hidden
-          className="puff-cloud-enter absolute right-[-90px] top-[275px] w-[390px]"
+          className="puff-cloud-enter absolute right-[-80px] top-[100px] w-[390px] drop-shadow-[0_0_0_white] filter"
         />
 
         {/* Animated dotted trail, appearing one dash at a time from right to left */}
         <svg
-          className="puff-star-trail absolute left-[72px] top-[660px] h-[74px] w-[420px]"
+          className="puff-star-trail absolute left-[72px] top-[400px] h-[74px] w-[420px]"
           viewBox="0 0 420 74"
           fill="none"
           aria-hidden
@@ -116,31 +116,20 @@ export function LandingPage({
     <div className="relative flex min-h-dvh flex-1 flex-col overflow-x-hidden overflow-y-auto bg-[#F8F6F1] text-[#1C1C1C]">
       <BackgroundDecor />
 
-      <main className="relative z-10 mx-auto flex min-h-dvh w-full max-w-md flex-col overflow-hidden px-0 pb-8">
+      <main className="relative z-10 mx-auto flex min-h-dvh w-full max-w-md flex-col overflow-hidden px-0 ">
 
-      <section className="relative px-8 pb-[3.6rem] pt-[9.3rem]">
-          <h1 className="relative z-10 max-w-[370px] font-serif text-[52px] leading-[1.08] tracking-[-0.045em] text-[#171717]">
+      <section className="relative px-8 pb-[1rem] pt-[9.3rem]">
+          <h1 className="relative z-10 max-w-[370px] font-crayon text-[30px] leading-[1.08] tracking-[-0.045em] text-[#a7a7a7]">
             A soft space
             <br />
             for your mind
             <br />
-            to breathe.
+            to{" "}
+            <span className="text-[#3F78BF73]">breathe.</span>
           </h1>
+      </section>
 
-          <p className="relative z-10 mt-8 max-w-[335px] font-mono text-[13px] leading-[1.85] tracking-[0.18em] text-[#2C2C2C]">
-            Capture your thoughts.
-            <br />
-            Release the noise.
-            <br />
-            Come back to what matters.
-          </p>
-        </section>
-
-        <section className="relative z-10 px-8 pb-28 pt-0">
-          <p className="mb-7 font-mono text-[12px] uppercase tracking-[0.42em] text-[#1C1C1C]">
-            How are you feeling?
-          </p>
-
+        <section className="relative z-10 px-8 pb-30 pt-58">
           <div className="-mx-1">
             <MoodPicker selectedId={selectedMoodId} onSelect={onSelectMood} />
           </div>
@@ -149,26 +138,22 @@ export function LandingPage({
             type="button"
             disabled={!selectedMoodId}
             onClick={onStartCapture}
-            className="mt-9 flex min-h-16 w-full items-center justify-center gap-4 rounded-full border border-[#3F76B5]/45 bg-[#3F76B5] px-6 py-4 text-center font-mono text-[12px] font-medium uppercase tracking-[0.34em] text-white shadow-[0_18px_45px_rgba(63,120,191,0.16)] transition [touch-action:manipulation] [-webkit-tap-highlight-color:transparent] enabled:active:scale-[0.98] disabled:cursor-not-allowed disabled:border-[#1C1C1C]/10 disabled:bg-white/45 disabled:text-[#1C1C1C]/35 disabled:shadow-none"
+            className="mt-4 flex min-h-16 w-full items-center justify-center gap-4 rounded-full border border-[#3F76B5]/45 bg-[#3F76B5] px-6 py-4 text-center font-mono text-[12px] font-medium uppercase tracking-[0.34em] text-white shadow-[0_18px_45px_rgba(63,120,191,0.16)] transition [touch-action:manipulation] [-webkit-tap-highlight-color:transparent] enabled:active:scale-[0.98] disabled:cursor-not-allowed disabled:border-[#1C1C1C]/10 disabled:bg-white/45 disabled:text-[#1C1C1C]/35 disabled:shadow-none"
           >
             <span className="text-lg leading-none">✎</span>
             <span>
-              {selectedMoodId ? "Capture a moment" : "Select a mood first"}
+              {selectedMoodId ? "Capture moment" : "Pick a Mood"}
             </span>
           </button>
-
-          <p className="mt-5 text-center font-mono text-[10px] uppercase tracking-[0.32em] text-[#6F6F6F]">
-            Air trace your note
-          </p>
-
-          <footer className="pt-16 text-center">
-            <p className="font-mono text-[11px] uppercase leading-[1.9] tracking-[0.34em] text-[#1C1C1C]/65">
-              A
-              <br />
-              217 Atelier Project
+          <footer className="pt-20 text-right">
+            <p className="font-mono text-[11px] uppercase leading-[1.9] tracking-[0.34em] text-[#6f6f6f]/65">
+            A 
+            <br />
+            A 217 Atelier
+            <br />
+            Project
             </p>
-            <span className="mx-auto mt-4 block h-px w-6 bg-[#1C1C1C]/65" />
-          </footer>
+        </footer>
         </section>
       </main>
     </div>

@@ -25,7 +25,8 @@ export function PuffNoteApp() {
     setDrawingDataUrl(null);
     setCapturedImageDataUrl(null);
   };
-
+  
+  
   if (screen === "capture" && selectedMood) {
     return (
       <CaptureScreen

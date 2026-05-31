@@ -252,10 +252,10 @@ export function PosterPreview({
       <main className="relative mx-auto flex w-full max-w-lg flex-col gap-8 px-5 pb-12 pt-10 sm:max-w-xl sm:px-8 sm:pt-14">
         <header className="flex items-center justify-between gap-4">
           <div>
-            <p className="text-[0.65rem] font-medium tracking-[0.28em] text-[var(--puff-muted)]">
+            <p className="text-[0.65rem] font-crayon tracking-[0.28em] text-[var(--puff-muted)]">
               POSTER PREVIEW
             </p>
-            <h1 className="font-serif text-2xl text-[var(--puff-ink)] sm:text-3xl">
+            <h1 className="font-crayon text-2xl text-[var(--puff-ink)] sm:text-3xl">
               Preview
             </h1>
           </div>
@@ -263,7 +263,7 @@ export function PosterPreview({
           <button
             type="button"
             onClick={onBack}
-            className="shrink-0 rounded-full border border-[var(--puff-ink)]/12 bg-white/60 px-4 py-1.5 text-sm tracking-wide text-[var(--puff-ink)] backdrop-blur-sm transition hover:bg-white active:scale-95"
+            className="shrink-0 rounded-full border border-[var(--puff-ink)]/12 bg-white/60 px-4 py-1.5 text-sm tracking-wide font-crayon backdrop-blur-sm transition hover:bg-white active:scale-95"
           >
             Start over
           </button>
@@ -329,7 +329,7 @@ export function PosterPreview({
           <button
             type="button"
             onClick={handleSavePoster}
-            className="flex-1 rounded-full border border-[var(--puff-paper)]/10 bg-[var(--puff-blue-pale)] px-5 py-3 text-sm tracking-[0.12em] text-white transition hover:opacity-90 active:scale-[0.98]"
+            className="flex-1 rounded-full border border-[var(--puff-paper)]/10 bg-[var(--puff-blue)] px-5 py-3 font-crayon text-sm tracking-[0.12em] text-white transition hover:opacity-90 active:scale-[0.98]"
           >
             Save poster
           </button>
@@ -337,7 +337,7 @@ export function PosterPreview({
           <button
             type="button"
             onClick={onBack}
-            className="flex-1 rounded-full border border-[var(--puff-ink)]/12 bg-white/70 px-5 py-3 text-sm tracking-[0.12em] text-[var(--puff-ink)] transition hover:bg-white active:scale-[0.98]"
+            className="flex-1 rounded-full border border-[var(--puff-ink)]/12 bg-white/70 px-5 py-3 text-sm tracking-[0.12em] font-crayon transition hover:bg-white active:scale-[0.98]"
           >
             Start over
           </button>

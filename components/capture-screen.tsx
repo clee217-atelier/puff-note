@@ -57,6 +57,10 @@ export function CaptureScreen({ mood, onBack, onCapture }: CaptureScreenProps) {
   const [trackingStatus, setTrackingStatus] =
     useState<TrackingStatus>("idle");
 
+  const [fingerPoint, setFingerPoint] = useState<{ x: number; y: number } | null>(
+      null,
+  );
+
   const [selectedTraceColor, setSelectedTraceColor] = useState<string>(
     TRACE_COLORS[0].value,
   );
@@ -78,11 +82,31 @@ export function CaptureScreen({ mood, onBack, onCapture }: CaptureScreenProps) {
     onBack();
   };
 
+  const [countdown, setCountdown] = useState<number | null>(null);
+
   const handleStartTracing = () => {
+    if (!fingerDetected) return;
+
     canvasRef.current?.clearCanvas();
     setHasDrawing(false);
     setShowTraceColorPicker(false);
-    setIsTracing(true);
+
+    setCountdown(3);
+
+    let current = 3;
+
+    const timer = window.setInterval(() => {
+      current -= 1;
+
+      if (current <= 0) {
+        window.clearInterval(timer);
+        setCountdown(null);
+        setIsTracing(true);
+        return;
+      }
+
+      setCountdown(current);
+    }, 650);
   };
 
   const handleDone = () => {
@@ -131,7 +155,7 @@ export function CaptureScreen({ mood, onBack, onCapture }: CaptureScreenProps) {
         <CameraFeed ref={cameraRef} moodId={mood.id} videoRef={videoRef} />
 
         <div className="pointer-events-none absolute inset-0 z-10 h-full w-full">
-          <DrawingCanvas
+        <DrawingCanvas
             ref={canvasRef}
             className="h-full w-full"
             detectionActive
@@ -141,8 +165,21 @@ export function CaptureScreen({ mood, onBack, onCapture }: CaptureScreenProps) {
             mirrorX={false}
             onDrawingChange={setHasDrawing}
             onTrackingStatusChange={handleTrackingStatusChange}
+            onFingerPointChange={setFingerPoint}
           />
         </div>
+
+        {fingerPoint && !isTracing ? (
+          <div
+            className="pointer-events-none absolute z-30 h-5 w-5 rounded-full border border-white bg-white/50 shadow-[0_0_18px_rgba(255,255,255,0.8)] transition-transform duration-100"
+            style={{
+              left: fingerPoint.x,
+              top: fingerPoint.y,
+              transform: "translate(-50%, -50%)",
+            }}
+            aria-hidden
+          />
+        ) : null}
 
         {!isTracing ? (
           <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center px-8 text-center">
@@ -190,7 +227,7 @@ export function CaptureScreen({ mood, onBack, onCapture }: CaptureScreenProps) {
                       "left-[-40px] top-[10px]",
                       "left-[10px] top-[20px]",
                       "left-[50px] top-[50px]",
-                      "left-[70px] top-[100px]",
+                      "left-[65px] top-[100px]",
                     ];
 
                     return (
@@ -224,7 +261,7 @@ export function CaptureScreen({ mood, onBack, onCapture }: CaptureScreenProps) {
               ) : null}
 
               <p className="rounded-full bg-white/30 px-5 py-2 font-crayon text-[12px] uppercase tracking-[0.28em] text-white backdrop-blur-[4px] drop-shadow-[0_2px_10px_rgba(0,0,0,0.25)] transition-all duration-500 ease-out">
-                {fingerDetected ? "Finger Detected" : "Point Finger"}
+                {fingerDetected ? "Finger Detected" : "Point Here 👉👉"}
               </p>
             </div>
           </div>
@@ -240,11 +277,19 @@ export function CaptureScreen({ mood, onBack, onCapture }: CaptureScreenProps) {
                   : "-translate-y-2 opacity-0",
               ].join(" ")}
             >
-              Draw slowly so Puff Note can follow
+              Slow down a little
             </p>
           </div>
         ) : null}
       </div>
+
+      {countdown ? (
+        <div className="pointer-events-none absolute inset-0 z-40 flex items-center justify-center">
+          <div className="grid h-20 w-20 place-items-center  font-crayon text-4xl text-white ">
+            {countdown}
+          </div>
+        </div>
+      ) : null}
 
       <footer className="relative z-30 flex shrink-0 gap-3 border-t border-white/10 bg-[#f8f6f1] px-4 py-4 backdrop-blur-md sm:px-6">
         <button
@@ -269,15 +314,16 @@ export function CaptureScreen({ mood, onBack, onCapture }: CaptureScreenProps) {
         {!isTracing ? (
           <button
             type="button"
+            disabled={!fingerDetected}
             onClick={handleStartTracing}
             className={[
               "flex-[1.25] rounded-full border py-3.5 font-crayon tracking-[0.12em] transition active:scale-[0.98]",
               fingerDetected
                 ? "border-[#5F88C9] bg-[#5F88C9] text-white"
-                : "border-white/30 bg-white text-[var(--puff-ink)]",
+                : "border-white/30 bg-white/70 text-[var(--puff-ink)]/45",
             ].join(" ")}
           >
-            Start Tracing
+            {fingerDetected ? "Start tracing" : "Finding Finger"}
           </button>
         ) : (
           <button

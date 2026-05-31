@@ -72,7 +72,7 @@ function drawImageCover(
 
 function drawImageContain(
   ctx: CanvasRenderingContext2D,
-  image: HTMLImageElement,
+  image: HTMLImageElement | HTMLCanvasElement,
   x: number,
   y: number,
   width: number,
@@ -140,6 +140,37 @@ function drawWrappedCenteredText(
   });
 }
 
+function createEnhancedDrawingImage(
+  drawingImage: HTMLImageElement,
+  width: number,
+  height: number,
+) {
+  const enhancedCanvas = document.createElement("canvas");
+  enhancedCanvas.width = width;
+  enhancedCanvas.height = height;
+
+  const enhancedCtx = enhancedCanvas.getContext("2d");
+  if (!enhancedCtx) return drawingImage;
+
+  // Soft fill layer to close tiny gaps
+  enhancedCtx.globalAlpha = 0.28;
+  enhancedCtx.filter = "blur(1.2px)";
+  enhancedCtx.drawImage(drawingImage, 0, 0, width, height);
+
+  // Main crisp drawing layer
+  enhancedCtx.globalAlpha = 1;
+  enhancedCtx.filter = "none";
+  enhancedCtx.drawImage(drawingImage, 0, 0, width, height);
+
+  // Slight second pass to make it feel fuller
+  enhancedCtx.globalAlpha = 0.32;
+  enhancedCtx.drawImage(drawingImage, 0.6, 0.6, width, height);
+
+  enhancedCtx.globalAlpha = 1;
+
+  return enhancedCanvas;
+}
+
 export function PosterPreview({
   mood,
   capturedImageDataUrl,
@@ -205,7 +236,14 @@ export function PosterPreview({
     // Draw hand trace above captured image
     if (drawingDataUrl) {
       const drawingImage = await loadImage(drawingDataUrl);
-      drawImageContain(ctx, drawingImage, imageX, imageY, imageWidth, imageHeight);
+    
+      const enhancedDrawing = createEnhancedDrawingImage(
+        drawingImage,
+        imageWidth,
+        imageHeight,
+      );
+    
+      drawImageContain(ctx, enhancedDrawing, imageX, imageY, imageWidth, imageHeight);
     }
 
     // Mood icon banner with optional caption

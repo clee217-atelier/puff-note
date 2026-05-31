@@ -22,7 +22,7 @@ const MODEL_URL =
 const INDEX_FINGER_TIP = 8;
 const MAX_JUMP_RATIO = 0.75;
 const LOST_FRAME_GRACE = 8;
-const MIN_DRAW_DISTANCE = 3.2;
+const MIN_DRAW_DISTANCE = 0.6;
 
 export type TrackingStatus =
   | "idle"
@@ -49,6 +49,7 @@ type DrawingCanvasProps = {
   mirrorX?: boolean;
   onDrawingChange?: (hasDrawing: boolean) => void;
   onTrackingStatusChange?: (status: TrackingStatus, message: string) => void;
+  onFingerPointChange?: (point: Point | null) => void;
 };
 
 type Point = {
@@ -80,6 +81,7 @@ export const DrawingCanvas = forwardRef<DrawingCanvasHandle, DrawingCanvasProps>
       mirrorX = false,
       onDrawingChange,
       onTrackingStatusChange,
+      onFingerPointChange,
     },
     ref,
   ) {
@@ -92,6 +94,7 @@ export const DrawingCanvas = forwardRef<DrawingCanvasHandle, DrawingCanvasProps>
 
     const previousPointRef = useRef<Point | null>(null);
     const lastMidPointRef = useRef<Point | null>(null);
+    const strokePointsRef = useRef<Point[]>([]);
 
     const lostFrameCountRef = useRef(0);
     const isDetectingRef = useRef(false);
@@ -185,6 +188,7 @@ export const DrawingCanvas = forwardRef<DrawingCanvasHandle, DrawingCanvasProps>
 
       previousPointRef.current = null;
       lastMidPointRef.current = null;
+      strokePointsRef.current = [];
       lostFrameCountRef.current = 0;
 
       notifyDrawingChange(false);
@@ -231,58 +235,57 @@ export const DrawingCanvas = forwardRef<DrawingCanvasHandle, DrawingCanvasProps>
       [mirrorX],
     );
 
-    const drawSmoothCurve = useCallback(
-      (from: Point, control: Point, to: Point, color: string) => {
+    const drawStrokePath = useCallback(
+      (points: Point[], color: string) => {
         const ctx = ctxRef.current;
-        if (!ctx) return;
-
-        if (distance(from, to) < MIN_DRAW_DISTANCE) return;
-
+        if (!ctx || points.length < 2) return;
+    
         ctx.save();
-
+    
         ctx.lineCap = "round";
         ctx.lineJoin = "round";
-
-        // Soft contrast edge so the line stays visible on real backgrounds
-        ctx.strokeStyle = color.includes("28, 28, 28")
-          ? "rgba(255, 255, 255, 0.28)"
-          : "rgba(28, 28, 28, 0.18)";
-        ctx.globalAlpha = 0.34;
-        ctx.lineWidth = 13;
-        ctx.shadowBlur = 0;
-
-        ctx.beginPath();
-        ctx.moveTo(from.x, from.y);
-        ctx.quadraticCurveTo(control.x, control.y, to.x, to.y);
-        ctx.stroke();
-
-        // Main soft trace line
-        ctx.strokeStyle = color;
-        ctx.globalAlpha = 0.66;
-        ctx.lineWidth = 8.5;
-        ctx.shadowColor = color.includes("255, 250, 238")
-          ? "rgba(0, 0, 0, 0.22)"
-          : "rgba(255, 255, 255, 0.12)";
-        ctx.shadowBlur = 2.5;
-
-        ctx.beginPath();
-        ctx.moveTo(from.x, from.y);
-        ctx.quadraticCurveTo(control.x, control.y, to.x, to.y);
-        ctx.stroke();
-
-        // Soft inner highlight, smooth but still a little handmade
-        ctx.strokeStyle = "rgba(255, 255, 255, 0.22)";
-        ctx.globalAlpha = 0.3;
-        ctx.lineWidth = 2.1;
-        ctx.shadowBlur = 0;
-
-        ctx.beginPath();
-        ctx.moveTo(from.x - 1, from.y - 1);
-        ctx.quadraticCurveTo(control.x - 1, control.y - 1, to.x - 1, to.y - 1);
-        ctx.stroke();
-
+        ctx.globalCompositeOperation = "source-over";
+    
+        const drawPath = (lineWidth: number, strokeStyle: string, alpha: number) => {
+          ctx.beginPath();
+          ctx.moveTo(points[0].x, points[0].y);
+    
+          for (let i = 1; i < points.length - 1; i += 1) {
+            const current = points[i];
+            const next = points[i + 1];
+    
+            const midX = (current.x + next.x) / 2;
+            const midY = (current.y + next.y) / 2;
+    
+            ctx.quadraticCurveTo(current.x, current.y, midX, midY);
+          }
+    
+          const last = points[points.length - 1];
+          ctx.lineTo(last.x, last.y);
+    
+          ctx.strokeStyle = strokeStyle;
+          ctx.globalAlpha = alpha;
+          ctx.lineWidth = lineWidth;
+          ctx.stroke();
+        };
+    
+        // Outer visibility edge
+        drawPath(
+          17,
+          color.includes("28, 28, 28")
+            ? "rgba(255, 255, 255, 0.24)"
+            : "rgba(28, 28, 28, 0.16)",
+          0.42,
+        );
+    
+        // Main solid trace
+        drawPath(11, color, 0.82);
+    
+        // Soft highlight
+        drawPath(3, "rgba(255, 255, 255, 0.18)", 0.26);
+    
         ctx.restore();
-
+    
         notifyDrawingChange(true);
       },
       [notifyDrawingChange],
@@ -299,6 +302,8 @@ export const DrawingCanvas = forwardRef<DrawingCanvasHandle, DrawingCanvasProps>
           if (lostFrameCountRef.current > LOST_FRAME_GRACE) {
             previousPointRef.current = null;
             lastMidPointRef.current = null;
+            strokePointsRef.current = [];
+            onFingerPointChange?. (null);
             emitStatus("lost", "Hold your hand in view");
           }
 
@@ -310,6 +315,9 @@ export const DrawingCanvas = forwardRef<DrawingCanvasHandle, DrawingCanvasProps>
         const raw = landmarkToPoint(tip);
         if (!raw) return;
 
+        // Send detected finger position back to CaptureScreen
+        onFingerPointChange?.(raw);
+
         const previous = previousPointRef.current;
 
         if (!previous) {
@@ -320,8 +328,8 @@ export const DrawingCanvas = forwardRef<DrawingCanvasHandle, DrawingCanvasProps>
         }
 
         const smoothed: Point = {
-          x: previous.x * 0.78 + raw.x * 0.22,
-          y: previous.y * 0.78 + raw.y * 0.22,
+          x: previous.x * 0.62 + raw.x * 0.38,
+          y: previous.y * 0.62 + raw.y * 0.38,
         };
 
         const canvas = canvasRef.current;
@@ -346,17 +354,21 @@ export const DrawingCanvas = forwardRef<DrawingCanvasHandle, DrawingCanvasProps>
           return;
         }
 
-        const mid = midpoint(previous, smoothed);
-        const from = lastMidPointRef.current ?? previous;
-
-        drawSmoothCurve(from, previous, mid, traceColor);
-
-        lastMidPointRef.current = mid;
+        if (distance(previous, smoothed) >= MIN_DRAW_DISTANCE) {
+          strokePointsRef.current.push(smoothed);
+        
+          if (strokePointsRef.current.length > 6) {
+            strokePointsRef.current.shift();
+          }
+        
+          drawStrokePath(strokePointsRef.current, traceColor);
+        }
+        
         previousPointRef.current = smoothed;
 
         emitStatus("detected", "Finger detected");
       },
-      [drawSmoothCurve, emitStatus, landmarkToPoint, traceColor, tracingActive],
+      [drawStrokePath, emitStatus, landmarkToPoint, onFingerPointChange, traceColor, tracingActive],
     );
 
     const stopLoop = useCallback(() => {
@@ -391,6 +403,7 @@ export const DrawingCanvas = forwardRef<DrawingCanvasHandle, DrawingCanvasProps>
         } catch {
           previousPointRef.current = null;
           lastMidPointRef.current = null;
+          strokePointsRef.current = [];
           emitStatus("lost", "Hold your hand in view");
         }
       }
@@ -467,6 +480,7 @@ export const DrawingCanvas = forwardRef<DrawingCanvasHandle, DrawingCanvasProps>
 
         previousPointRef.current = null;
         lastMidPointRef.current = null;
+        strokePointsRef.current = [];
 
         if (!handLandmarkerRef.current && !initStartedRef.current) {
           emitStatus("idle", "");
